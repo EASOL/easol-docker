@@ -1,11 +1,8 @@
 #!/bin/bash
-
 # Disable Strict Host checking for non interactive git clones
-
 mkdir -p -m 0700 /root/.ssh
 echo -e "Host *\n\tStrictHostKeyChecking no\n" >> /root/.ssh/config
-
-# Setup git variables
+# Setup git
 if [ ! -z "$GIT_EMAIL" ]; then
  git config --global user.email "$GIT_EMAIL"
 fi
@@ -33,7 +30,7 @@ sed -i -e "s/worker_processes 5/worker_processes $procs/" /etc/nginx/nginx.conf
 # Very dirty hack to replace variables in code with ENVIRONMENT values
 if [[ "$TEMPLATE_NGINX_HTML" != "0" ]] ; then
   for i in $(env)
-  do
+  do 
     variable=$(echo "$i" | cut -d'=' -f1)
     value=$(echo "$i" | cut -d'=' -f2)
     if [[ "$variable" != '%s' ]] ; then
