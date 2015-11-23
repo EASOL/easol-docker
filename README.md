@@ -1,159 +1,74 @@
 ## Introduction
-This is a Dockerfile to build a container image for nginx and php-fpm, with the ability to pull website code from git. The container can also use environment variables to configure your web application using the templating detailed in the special features section.
-### Git reposiory
-The source files for this project can be found here: [https://github.com/ngineered/nginx-php-fpm](https://github.com/ngineered/nginx-php-fpm)
+This project's main objective is to make it easy for EASOL developers to set up a fresh new environment with a
+working PHP/Nginx installation that is ready to connect to a MS SQL Server using [FreeTDS](http://www.freetds.org).
 
-If you have any improvements please submit a pull request.
-### Docker hub repository
-The Docker hub build can be found here: [https://registry.hub.docker.com/u/richarvey/nginx-php-fpm/](https://registry.hub.docker.com/u/richarvey/nginx-php-fpm/)
+## Docker services
+The project is composed of three different docker services, each one responsible for setting up and managing a single
+process/server.
 
-## Nginx Versions
-- Mainline Version: **1.9.5**
-- Stable Version: **1.8.0**
-- *Latest = Mainline Version*
+### Nginx
+The `nginx` service is based on the official [nginx docker image](https://hub.docker.com/_/nginx/) and just defines
+the default configuration for the web server.
 
-## Installation
-Pull the image from the docker index rather than downloading the git repo. This prevents you having to build the image on every docker host.
+The `site` folder is a mounted volume that points to the web server's document root, so you can add your own files
+and they will be served by nginx.
 
-```
-docker pull richarvey/nginx-php-fpm:latest
-```
-To pull the Stable Version:
+### PHP-FPM
+The `php` service also uses the official [php-fpm image from the docker hub](https://hub.docker.com/_/php/), but
+additionally installs the [sybase_ct exension](http://php.net/manual/en/book.sybase.php), to make it possible to
+communicate with MS SQL Server.
 
-```
-docker pull richarvey/nginx-php-fpm:stable
-```
-To pull the Mainline Version:
+### Configuration
+There's an additional service, `config`, that takes care of replacing all the configuration placeholders at runtime
+and make the final values available to all involved docker containers.
 
-```
-docker pull richarvey/nginx-php-fpm:mainline
-```
-## Running
-To simply run the container:
+It's basically a one-off process that reads the environment variables from `env.default` and replaces the
+placeholders found in the `.conf` and `.ini` files with the actual values.
 
-```
-sudo docker run --name nginx -p 8080:80 -d richarvey/nginx-php-fpm
-```
-You can then browse to http://\<docker_host\>:8080 to view the default install files.
-### Volumes
-If you want to link to your web site directory on the docker host to the container run:
+#### How can I override the default configuration?
+The easiest way is by using the `env.local` file. Declare the environment variables that you want to override
+by providing your own values, and the `config` container will pick them up instead of the default ones at runtime when
+it performs the placeholder replacement.
 
-```
-sudo docker run --name nginx -p 8080:80 -v /your_code_directory:/usr/share/nginx/html -d richarvey/nginx-php-fpm
-```
-### Pulling code from git
-One of the nice features of this container is its ability to pull code from a git repository with a couple of environmental variables passed at run time.
 
-**Note:** You need to have your SSH key that you use with git to enable the deployment. I recommend using a special deploy key per project to minimise the risk.
+## Usage
+To orchestrate the three services and set up the containers we use [docker compose](https://docs.docker.com/compose/).
+This allows us to declare in a single file, `docker-compose.yml`, the containers involved as well as their relationships.
 
-To run the container and pull code simply specify the GIT_REPO URL including *git@* and then make sure you have a folder on the docker host with your id_rsa key stored in it:
+To start the three containers, first make sure `docker-compose` is installed on your local machine and then run the
+following command from the root of the project:
 
 ```
-sudo docker run -e 'GIT_REPO=git@git.ngd.io:ngineered/ngineered-website.git'  -v /opt/ngddeploy/:/root/.ssh -p 8080:80 -d richarvey/nginx-php-fpm
+docker-compose up       # Add -d flag for “detached” mode
 ```
 
-To pull a repository and specify a branch add the GIT_BRANCH environment variable:
+This will take care of building the docker images and starting three containers. If everything works as expected,
+you should should see something similar to this:
 
 ```
-sudo docker run -e 'GIT_REPO=git@git.ngd.io:ngineered/ngineered-website.git' -e 'GIT_BRANCH=stage' -v /opt/ngddeploy/:/root/.ssh -p 8080:80 -d richarvey/nginx-php-fpm
-```
-### Linking
-Linking to containers also exposes the linked container environment variables which is useful for templating and configuring web apps.
-
-Run MySQL container with some extra details:
-
-```
-sudo docker run --name some-mysql -e MYSQL_ROOT_PASSWORD=yayMySQL -e MYSQL_DATABASE=wordpress -e MYSQL_USER=wordpress_user -e MYSQL_PASSWORD=wordpress_password -d mysql
-```
-
-This exposes the following environment variables to the container when linked:
-
-```
-MYSQL_ENV_MYSQL_DATABASE=wordpress
-MYSQL_ENV_MYSQL_ROOT_PASSWORD=yayMySQL
-MYSQL_PORT_3306_TCP_PORT=3306
-MYSQL_PORT_3306_TCP=tcp://172.17.0.236:3306
-MYSQL_ENV_MYSQL_USER=wordpress_user
-MYSQL_ENV_MYSQL_PASSWORD=wordpress_password
-MYSQL_ENV_MYSQL_VERSION=5.6.22
-MYSQL_NAME=/sick_mccarthy/mysql
-MYSQL_PORT_3306_TCP_PROTO=tcp
-MYSQL_PORT_3306_TCP_ADDR=172.17.0.236
-MYSQL_ENV_MYSQL_MAJOR=5.6
-MYSQL_PORT=tcp://172.17.0.236:3306
-
+Creating easoldocker_config_1
+Creating easoldocker_php_1
+Creating easoldocker_nginx_1
+Attaching to easoldocker_config_1, easoldocker_php_1, easoldocker_nginx_1
+config_1 | 2015/11/23 12:52:51 [ DEBUG ] Parsing environment references in '/etc/freetds/freetds.conf'
+config_1 | 2015/11/23 12:52:51 [ DEBUG ] Expanding reference to 'TDS_HOST' to value 'ngbivv3p2g.database.windows.net'
+config_1 | 2015/11/23 12:52:51 [ DEBUG ] Expanding reference to 'TDS_VERSION' to value 'auto'
+config_1 | 2015/11/23 12:52:51 [ DEBUG ] Expanding reference to 'TDS_PORT' to value '1443'
+php_1    | [23-Nov-2015 12:52:52] NOTICE: fpm is running, pid 1
+php_1    | [23-Nov-2015 12:52:52] NOTICE: ready to handle connections
+easoldocker_config_1 exited with code 0
 ```
 
-To link the container launch like this:
+This means you now have working PHP + Nginx setup running on port 80 of your local host (or virtual machine if you use
+docker machine). Press Control + C if you want to interrupt the server.
+
+If you modify the `env.local` file, make sure you stop and destroy all previous containers, so the new values take
+ effect, by issuing the following commands:
 
 ```
-sudo docker run -e 'GIT_REPO=git@git.ngd.io:ngineered/ngineered-website.git' -v /opt/ngddeploy/:/root/.ssh -p 8080:80 --link some-mysql:mysql -d richarvey/nginx-php-fpm
-```
-### Enabling SSL or Special Nginx Configs
-As with all docker containers its possible to link resources from the host OS to the guest. This makes it really easy to link in custom nginx default config files or extra virtual hosts and SSL enabled sites. For SSL sites first create a directory somewhere such as */opt/deployname/ssl/*. In this directory drop you SSL cert and Key in. Next create a directory for your custom hosts such as  */opt/deployname/sites-enabled*. In here load your custom default.conf file which references your SSL cert and keys at the location, for example:  */etc/nginx/ssl/xxxx.key*
-
-Then start your container and connect these volumes like so:
-
-```
-sudo docker run -e 'GIT_REPO=git@git.ngd.io:ngineered/ngineered-website.git' -v /opt/ngddeploy/:/root/.ssh -v /opt/deployname/ssl:/etc/nginx/ssl -v /opt/deployname/sites-enabled:/etc/nginx/sites-enabled -p 8080:80 --link some-mysql:mysql -d richarvey/nginx-php-fpm
+docker-compose stop     # Stops the containers
+docker-compose rm -f    # Removes the containers
 ```
 
-## Special Features
-
-### Push code to Git
-To push code changes back to git simply run:
-```
-sudo docker exec -t -i <CONATINER_NAME> /usr/bin/push
-```
-### Pull code from Git (Refresh)
-In order to refresh the code in a container and pull newer code form git simply run:
-```
-sudo docker exec -t -i <CONTAINER_NAME> /usr/bin/pull
-```
-### Templating
-This container will automatically configure your web application if you template your code. For example if you are linking to MySQL like above, and you have a config.php file where you need to set the MySQL details include $$_MYSQL_ENV_MYSQL_DATABASE_$$ style template tags.
-
-Example:
-
-```
-<?php
-database_name = $$_MYSQL_ENV_MYSQL_DATABASE_$$;
-database_host = $$_MYSQL_PORT_3306_TCP_ADDR_$$;
-...
-?>
-```
-
-### Using environment variables
-If you want to link to an external MySQL DB and not using linking you can pass variables directly to the container that will be automatically configured by the container.
-
-Example:
-
-```
-sudo docker run -e 'GIT_REPO=git@git.ngd.io:ngineered/ngineered-website.git' -e 'GIT_BRANCH=stage' -e 'MYSQL_HOST=host.x.y.z' -e 'MYSQL_USER=username' -e 'MYSQL_PASS=password' -v /opt/ngddeploy/:/root/.ssh -p 8080:80 -d richarvey/nginx-php-fpm
-```
-
-This will expose the following variables that can be used to template your code.
-
-```
-MYSQL_HOST=host.x.y.z
-MYSQL_USER=username
-MYSQL_PASS=password
-```
-To use these variables in a template you'd do the following in your file:
-
-```
-<?php
-database_host = $$_MYSQL_HOST_$$;
-database_user = $$_MYSQL_USER_$$;
-database_pass = $$_MYSQL_PASS_$$
-...
-?>
-```
-### Skip Templating
-In order to speed up install time if templating is not required and you have a lot of files in your web root that you don't wish to be scanned, simply include the flag below:
-
-```-e TEMPLATE_NGINX_HTML=0```
-
-### Template anything
-Yes ***ANYTHING***, any variable exposed by a linked container or the **-e** flag lets you template your config files. This means you can add redis, mariaDB, memcache or anything you want to your application very easily.
-
+For more docker compose commands and options, please take a look at the
+[official command line reference](http://docs.docker.com/compose/reference/docker-compose/).
