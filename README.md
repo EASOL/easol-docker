@@ -33,9 +33,9 @@ it performs the placeholder replacement.
 
 ## Usage
 To orchestrate the three services and set up the containers we use [docker compose](https://docs.docker.com/compose/).
-This allows us to declare in a single file, `docker-compose.yml`, the containers involved as well as their relationships.
+This allows us to declare in a single file, `docker-compose.yml`, the services involved as well as their relationships.
 
-To start the three containers, first make sure `docker-compose` is installed on your local machine and then run the
+To start the three services, first make sure `docker-compose` is installed on your local machine and then run the
 following command from the root of the project:
 
 ```
@@ -59,7 +59,7 @@ php_1    | [23-Nov-2015 12:52:52] NOTICE: ready to handle connections
 easoldocker_config_1 exited with code 0
 ```
 
-This means you now have working PHP + Nginx setup running on port 80 of your local host (or virtual machine if you use
+This means you now have a working PHP + Nginx setup running on port 80 of your local host (or virtual machine if you use
 docker machine). Press Control + C if you want to interrupt the server.
 
 If you modify the `env.local` file, make sure you stop and destroy all previous containers, so the new values take
