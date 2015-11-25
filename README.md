@@ -30,6 +30,32 @@ The easiest way is by using the `env.local` file. Declare the environment variab
 by providing your own values, and the `config` container will pick them up instead of the default ones at runtime when
 it performs the placeholder replacement.
 
+## Installation
+We provide an installation script that takes care of setting up all the required system dependencies, as well as the
+docker tools.
+
+These are the actual steps that are performed when the installation script runs:
+
+* Install base packages for a proper development environment (git, curl, etc.)
+* Install docker (unless it's already installed)
+* Install docker compose (unless it's already installed)
+* Clone this GIT repository and set proper defaults
+
+*Note: The installation script is only compatible with Ubuntu.*
+
+Here's how you can use it:
+
+```
+curl -sSL https://raw.githubusercontent.com/EASOL/easol-docker/master/install.sh | sudo bash
+```
+
+Some caveats:
+
+* Make sure you have SSH access to this repository, otherwise the installation will fail when trying to clone it.
+* Since this is a private repository, you'll probably have to add your credentials to the above URL, either by
+providing your username & password or by appending a `token` query parameter.
+* If you receive an error, try running again the `install.sh` script by providing the `--verbose` flag (or `-v` for
+short). This will output all messages to the console, so you'll be able to actually see what went wrong.
 
 ## Usage
 To orchestrate the three services and set up the containers we use [docker compose](https://docs.docker.com/compose/).
