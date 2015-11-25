@@ -13,6 +13,9 @@ php:
     - ./site:/usr/share/nginx/html
   volumes_from:
     - config
+  env_file:
+    - env.default
+    - env.local
 nginx:
   build: nginx
   ports:
