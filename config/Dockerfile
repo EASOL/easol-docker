@@ -2,8 +2,6 @@ FROM debian:jessie
 
 # Copy FreeTDS configuration files
 COPY freetds.conf /etc/freetds/freetds.conf
-COPY odbc.ini /etc
-COPY odbcinst.ini /etc
 
 RUN apt-get update && apt-get install -y \
         curl
