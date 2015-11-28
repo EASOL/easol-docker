@@ -2,6 +2,7 @@ config:
   build: config
   volumes:
     - /etc/freetds
+    - /etc/odbc
   env_file:
     - env.default
     - env.local
