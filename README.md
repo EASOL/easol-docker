@@ -98,3 +98,12 @@ docker-compose rm -f    # Removes the containers
 
 For more docker compose commands and options, please take a look at the
 [official command line reference](http://docs.docker.com/compose/reference/docker-compose/).
+
+### Demo scripts
+In the `site` folder there are a couple of PHP scripts that show how to connect to a MS SQL Server instance and list its
+tables. The `sybase.php` file uses the `sybase_ct` PHP extension and the `odbc.php` file uses the standard ODBC
+approach.
+
+Keep in mind that, in order to choose the database that you want to connect to, you must use an ODBC connection. When
+using the `sybase` methods the database is implicit and by default it's always `master`. Unfortunately, trying to
+use the `mssql_select_db` method to switch the database will raise an error.
