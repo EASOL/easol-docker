@@ -107,3 +107,11 @@ approach.
 Keep in mind that, in order to choose the database that you want to connect to, you must use an ODBC connection. When
 using the `sybase` methods the database is implicit and by default it's always `master`. Unfortunately, trying to
 use the `mssql_select_db` method to switch the database will raise an error.
+
+### EASOL application
+The main EASOL application repository (`development` branch) is added as a subtree under the `easol-app` folder. This
+means we track the development branch of the main repo, and can be updated anytime by running this command:
+
+`git subtree pull --prefix easol-app git@github.com:EASOL/easol.git development --squash`
+
+Ideally we should try not to commit anything in this folder and instead use the main EASOL repository for modifications.
