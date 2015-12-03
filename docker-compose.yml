@@ -11,7 +11,7 @@ php:
   ports:
    - "9000:9000"
   volumes:
-    - ./site:/usr/share/nginx/html
+    - ./easol-app:/usr/share/nginx/html
   volumes_from:
     - config
   env_file:

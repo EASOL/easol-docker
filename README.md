@@ -10,7 +10,7 @@ process/server.
 The `nginx` service is based on the official [nginx docker image](https://hub.docker.com/_/nginx/) and just defines
 the default configuration for the web server.
 
-The `site` folder is a mounted volume that points to the web server's document root, so you can add your own files
+The `easol-app` folder is a mounted volume that points to the web server's document root, so you can add your own files
 and they will be served by nginx.
 
 ### PHP-FPM
