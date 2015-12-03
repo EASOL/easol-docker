@@ -22,6 +22,10 @@ RUN set -x \
     && ./configure --with-iodbc=shared,/usr \
     && docker-php-ext-install odbc
 
+
+# Copy custom php configuration
+COPY php.ini /usr/local/etc/php/
+
 # Link odbc configuration files to the definitive paths
 RUN rm -f /etc/odbcinst.ini /etc/odbc.ini
 RUN ln -s /etc/odbc/odbcinst.ini /etc/odbcinst.ini
